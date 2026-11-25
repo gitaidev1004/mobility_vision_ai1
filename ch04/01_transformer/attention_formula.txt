@@ -1,0 +1,12 @@
+Attention(Q, K, V) = softmax(Q K^T / sqrt(d_k)) V
+
+  Q : (n_q, d_k)  질의 행렬. 찾고 싶은 것을 담는다.
+  K : (n_k, d_k)  키 행렬. 각 위치가 무엇인지를 알리는 이름표.
+  V : (n_k, d_v)  값 행렬. 실제로 가져올 내용.
+  d_k: 키의 차원 수. 스케일링에 쓰인다.
+
+단계별 분해
+  1) scores  = Q K^T              # (n_q, n_k) 유사도 점수
+  2) scaled  = scores / sqrt(d_k) # 분산 보정
+  3) weights = softmax(scaled)    # 행별 확률분포 (합 = 1)
+  4) out     = weights V          # (n_q, d_v) 가중합

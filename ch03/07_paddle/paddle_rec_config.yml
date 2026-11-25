@@ -1,0 +1,139 @@
+# ch03/07_paddle/paddle_rec_config.yml
+# PaddleOCR 인식(rec) 모델 번호판 전용 fine-tuning 설정.
+# 기반: PP-OCRv4 한국어 모바일 인식 모델(SVTR_LCNet)
+# 실행: python tools/train.py -c ch03/07_paddle/paddle_rec_config.yml
+
+Global:
+  use_gpu: false                     # CPU 전용 환경
+  epoch_num: 120                     # 번호판 데이터는 작으므로 에폭을 넉넉히
+  log_smooth_window: 20
+  print_batch_step: 50
+  save_model_dir: ./output/plate_rec  # 체크포인트 저장 위치
+  save_epoch_step: 10
+  eval_batch_step: [0, 200]          # 200 스텝마다 검증
+  cal_metric_during_train: true
+  # 사전학습 가중치. 한국어 모바일 인식 모델을 내려받아 여기에 둔다.
+  pretrained_model: ./pretrain/korean_PP-OCRv4_rec_train/best_accuracy
+  checkpoints: null
+  save_inference_dir: ./inference/plate_rec
+  use_visualdl: false
+  infer_img: ./data/plates_crop/0000_12가3456_0.jpg
+  # 번호판 전용 문자 사전. make_rec_dataset.py 가 생성한다(67자).
+  character_dict_path: ./data/paddle_rec/plate_dict.txt
+  max_text_length: 9                 # 서울34나5678 = 9자
+  infer_mode: false
+  use_space_char: false              # 번호판에는 공백이 없다
+  save_res_path: ./output/plate_rec/predicts.txt
+
+Optimizer:
+  name: Adam
+  beta1: 0.9
+  beta2: 0.999
+  lr:
+    name: Cosine
+    learning_rate: 0.0005            # 사전학습 모델이므로 작게 시작한다
+    warmup_epoch: 5
+  regularizer:
+    name: L2
+    factor: 3.0e-05
+
+Architecture:
+  model_type: rec
+  algorithm: SVTR_LCNet              # PP-OCRv4 모바일 인식 구조
+  Transform: null
+  Backbone:
+    name: PPLCNetV3
+    scale: 0.95
+  Head:
+    name: MultiHead
+    head_list:
+      - CTCHead:
+          Neck:
+            name: svtr
+            dims: 120
+            depth: 2
+            hidden_dims: 120
+            kernel_size: [1, 3]
+            use_guide: true
+          Head:
+            fc_decay: 1.0e-05
+      - NRTRHead:                    # 보조 헤드. 학습 안정화에 기여한다
+          nrtr_dim: 384
+          max_text_length: 9
+
+Loss:
+  name: MultiLoss
+  loss_config_list:
+    - CTCLoss: null
+    - NRTRLoss: null
+
+PostProcess:
+  name: CTCLabelDecode
+
+Metric:
+  name: RecMetric
+  main_indicator: acc
+  ignore_space: true
+
+Train:
+  dataset:
+    name: SimpleDataSet
+    data_dir: ./data/plates_crop     # 이미지 루트
+    ext_op_transform_idx: 1
+    label_file_list:
+      - ./data/paddle_rec/train.txt  # <이미지 상대경로>\t<정답>
+    transforms:
+      - DecodeImage:
+          img_mode: BGR
+          channel_first: false
+      - RecConAug:                   # 두 장을 이어 붙여 길이 변화를 학습
+          prob: 0.5
+          ext_data_num: 2
+          image_shape: [48, 320, 3]
+          max_text_length: 9
+      - RecAug:                      # 기울기·블러·노이즈 증강
+          use_tia: true
+          aug_prob: 0.4
+      - MultiLabelEncode:
+          gtc_encode: NRTRLabelEncode
+      - RecResizeImg:
+          image_shape: [3, 48, 320]  # 번호판은 가로로 길다
+      - KeepKeys:
+          keep_keys:
+            - image
+            - label_ctc
+            - label_gtc
+            - length
+            - valid_ratio
+  loader:
+    shuffle: true
+    batch_size_per_card: 64
+    drop_last: true
+    num_workers: 4
+
+Eval:
+  dataset:
+    name: SimpleDataSet
+    data_dir: ./data/plates_crop
+    label_file_list:
+      - ./data/paddle_rec/val.txt    # 학습에 쓰지 않은 번호판만 들어간다
+    transforms:
+      - DecodeImage:
+          img_mode: BGR
+          channel_first: false
+      - MultiLabelEncode:
+          gtc_encode: NRTRLabelEncode
+      - RecResizeImg:
+          image_shape: [3, 48, 320]
+      - KeepKeys:
+          keep_keys:
+            - image
+            - label_ctc
+            - label_gtc
+            - length
+            - valid_ratio
+  loader:
+    shuffle: false
+    drop_last: false
+    batch_size_per_card: 64
+    num_workers: 4

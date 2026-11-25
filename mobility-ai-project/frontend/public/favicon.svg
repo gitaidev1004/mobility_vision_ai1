@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="모빌리티 비전 AI">
+  <!-- 배경 라운드 사각형 -->
+  <rect width="64" height="64" rx="14" fill="#0f172a"/>
+  <!-- 차량 실루엣 -->
+  <path d="M12 38h40l-4-11a6 6 0 0 0-5.6-4H21.6A6 6 0 0 0 16 27z" fill="#2563eb"/>
+  <circle cx="21" cy="42" r="4.5" fill="#f6f8fb"/>
+  <circle cx="43" cy="42" r="4.5" fill="#f6f8fb"/>
+  <!-- 번호판 인식 박스 -->
+  <rect x="24" y="16" width="16" height="8" rx="2" fill="none" stroke="#16a34a" stroke-width="2.5"/>
+</svg>

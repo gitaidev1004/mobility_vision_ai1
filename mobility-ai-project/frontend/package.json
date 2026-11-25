@@ -1,0 +1,25 @@
+{
+  "name": "mobility-ai-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "모빌리티 비전 AI 관리자 대시보드 (Vue 3 + Vite)",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --port 5173"
+  },
+  "dependencies": {
+    "axios": "1.12.2",
+    "pinia": "2.3.1",
+    "vue": "3.5.13",
+    "vue-router": "4.5.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "5.2.1",
+    "vite": "6.0.7"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

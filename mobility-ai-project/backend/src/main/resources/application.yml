@@ -1,0 +1,111 @@
+# =====================================================================
+# 공통 설정. 모든 외부화 값은 ${ENV:default} 형태로 노출한다.
+# 프로파일: dev(기본) / prod
+# =====================================================================
+spring:
+  application:
+    name: mobility-ai-backend
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/mobility_ai}
+    username: ${DB_USERNAME:mobility}
+    password: ${DB_PASSWORD:mobility123}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: ${DB_POOL_MAX:10}
+      minimum-idle: 2
+      connection-timeout: 10000
+      pool-name: mobility-pool
+
+  jpa:
+    # 스키마는 Flyway 가 관리하므로 Hibernate 는 검증/무변경으로 둔다.
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: Asia/Seoul
+          batch_size: 50
+        order_inserts: true
+        order_updates: true
+        format_sql: false
+
+  flyway:
+    enabled: ${FLYWAY_ENABLED:true}
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    baseline-version: 0
+    validate-on-migrate: true
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: ${UPLOAD_MAX_FILE_SIZE:20MB}
+      max-request-size: ${UPLOAD_MAX_REQUEST_SIZE:60MB}
+
+  jackson:
+    # Jackson 3 (tools.jackson) 기본. null 필드는 응답에 유지한다(계약서 JSON 과 1:1).
+    default-property-inclusion: always
+
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+  error:
+    include-message: always
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
+# ---------------------------------------------------------------------
+# 애플리케이션 고유 설정
+# ---------------------------------------------------------------------
+app:
+  jwt:
+    # HMAC-SHA256 대칭키. 32바이트(256비트) 이상이어야 한다.
+    secret: ${JWT_SECRET:mobility-ai-dev-secret-key-change-me-32bytes-min!}
+    expires-seconds: ${JWT_EXPIRES_SECONDS:3600}
+    issuer: ${JWT_ISSUER:mobility-ai}
+
+  ai:
+    # AI 추론 서비스(FastAPI) 기본 URL 과 타임아웃(ms)
+    base-url: ${AI_BASE_URL:http://localhost:8000}
+    connect-timeout-ms: ${AI_CONNECT_TIMEOUT_MS:2000}
+    read-timeout-ms: ${AI_READ_TIMEOUT_MS:15000}
+
+  storage:
+    upload-dir: ${UPLOAD_DIR:./data/uploads}
+
+  parking:
+    # 주차장 총 수용 대수 (주차 현황 점유율 계산용)
+    capacity: ${PARKING_CAPACITY:120}
+
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://127.0.0.1:5173}
+
+  recognition:
+    # 신뢰도 임계값: 이 값 미만이면 LOW_CONFIDENCE 로 간주하고 통행 거부
+    min-confidence: ${RECOGNITION_MIN_CONFIDENCE:0.60}
+    # 동일 번호판/게이트/타입 중복 이벤트 억제 창(초)
+    dedup-window-seconds: ${RECOGNITION_DEDUP_SECONDS:30}
+
+  pdm:
+    # 예측 1회에 사용할 최근 센서 건수
+    readings-window: ${PDM_READINGS_WINDOW:50}
+
+logging:
+  level:
+    root: INFO
+    com.mobility.ai: ${LOG_LEVEL_APP:DEBUG}

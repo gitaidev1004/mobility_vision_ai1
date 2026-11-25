@@ -1,0 +1,85 @@
+/* ============================================================
+   디자인 토큰 (계약서 5장 색상 규약)
+   - 모든 컴포넌트는 하드코딩된 색상 대신 이 변수를 참조한다.
+   - 라이트 테마 고정. 다크 테마는 교재 범위 밖이다.
+   ============================================================ */
+:root {
+  /* --- 기본 색상 --- */
+  --c-bg: #0f172a;          /* 사이드바 배경 (계약서 지정값) */
+  --c-bg-soft: #1e293b;     /* 사이드바 내부 구분 영역 */
+  --c-bg-hover: #27344b;    /* 사이드바 메뉴 hover */
+  --c-body: #f6f8fb;        /* 본문 배경 (계약서 지정값) */
+  --c-surface: #ffffff;     /* 카드 배경 */
+  --c-surface-alt: #f9fafc; /* 표 머리글 등 보조 면 */
+
+  --c-primary: #2563eb;
+  --c-primary-dark: #1d4ed8;
+  --c-primary-soft: #e8effe;
+  --c-success: #16a34a;
+  --c-success-soft: #e6f6ec;
+  --c-warn: #f59e0b;
+  --c-warn-soft: #fef3e2;
+  --c-danger: #dc2626;
+  --c-danger-soft: #fdeaea;
+  --c-info: #0891b2;
+  --c-info-soft: #e3f4f8;
+
+  /* --- 텍스트 --- */
+  --c-text: #111827;        /* 본문 기본 */
+  --c-text-sub: #4b5563;    /* 보조 설명 */
+  --c-text-muted: #8b95a5;  /* 캡션/placeholder */
+  --c-text-invert: #f8fafc; /* 어두운 배경 위 텍스트 */
+  --c-text-sidebar: #9aa7bd;/* 사이드바 비활성 메뉴 */
+
+  /* --- 선/구분 --- */
+  --c-border: #e4e8ef;
+  --c-border-strong: #cbd3df;
+
+  /* --- 차트 계열 색상 (SVG 컴포넌트에서 참조) --- */
+  --c-chart-1: #2563eb;
+  --c-chart-2: #16a34a;
+  --c-chart-3: #f59e0b;
+  --c-chart-4: #dc2626;
+  --c-chart-5: #7c3aed;
+  --c-chart-6: #0891b2;
+  --c-grid: #eef1f6;
+
+  /* --- 모양 --- */
+  --radius-sm: 6px;
+  --radius: 12px;           /* 카드 라운드 (계약서 지정값) */
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+
+  /* --- 그림자 --- */
+  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.05);
+  --shadow: 0 1px 3px rgba(16, 24, 40, 0.08), 0 1px 2px rgba(16, 24, 40, 0.04);
+  --shadow-md: 0 4px 12px rgba(16, 24, 40, 0.08);
+  --shadow-lg: 0 12px 32px rgba(16, 24, 40, 0.14);
+
+  /* --- 간격 --- */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+
+  /* --- 레이아웃 --- */
+  --sidebar-w: 236px;
+  --sidebar-w-compact: 72px;
+  --topbar-h: 60px;
+  --page-max: 1400px;
+
+  /* --- 타이포그래피 --- */
+  --font-sans: 'Pretendard', 'Noto Sans KR', 'Noto Sans CJK KR', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'D2Coding', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --fs-xs: 11px;
+  --fs-sm: 12px;
+  --fs-base: 13px;
+  --fs-md: 14px;
+  --fs-lg: 16px;
+  --fs-xl: 20px;
+  --fs-2xl: 26px;
+  --fs-3xl: 32px;
+}

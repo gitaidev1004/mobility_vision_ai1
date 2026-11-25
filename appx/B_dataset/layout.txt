@@ -1,0 +1,16 @@
+datasets/plate_det/
+├── images/
+│   ├── train/        S001_DY_20260401_0001.jpg ...  (약 5,250장)
+│   ├── val/          S018_NI_20260420_0003.jpg ...  (약 1,125장)
+│   └── test/         S022_RA_20260425_0011.jpg ...  (약 1,125장)
+├── labels/
+│   ├── train/        S001_DY_20260401_0001.txt ...  (YOLO 박스)
+│   │                 S001_DY_20260401_0001.gt.txt   (번호판 정답, OCR 학습용)
+│   ├── val/
+│   └── test/
+├── meta.csv          stem,plate,session,env,date,vehicle_id,px_width
+├── sessions.csv      (1)-④ 촬영 세션 기록을 CSV 로 옮긴 것
+├── data.yaml         Ultralytics 학습 설정
+└── reports/
+    ├── dataset_report_20260430.txt   (5) 통계·품질 리포트
+    └── leakage_check_20260430.txt    (4) 누수 검사 결과

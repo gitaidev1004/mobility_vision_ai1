@@ -1,0 +1,46 @@
+                      ┌─────────────────────┐
+                      │     app_user        │  (독립: 관계 없음)
+                      │  PK id              │
+                      │  UQ username        │
+                      │     role            │  ADMIN|OPERATOR|VIEWER
+                      └─────────────────────┘
+
+                      ┌─────────────────────┐
+                      │   parking_policy    │  (독립: 활성 1건을 코드가 조회)
+                      │  PK id              │
+                      │     active          │
+                      └─────────────────────┘
+                                 ╎  (FK 아님 — 코드가 활성 정책을 선택)
+                                 ╎
+  ┌────────────────────────────────────────────────────────────────────────┐
+  │                              vehicle                                   │
+  │  PK id        UQ plate_number        pass_type / pass_expires_at       │
+  │                                      active                            │
+  └───┬────────┬─────────┬──────────┬──────────┬─────────────┬─────────────┘
+      │1       │1        │1         │1         │1            │1
+      │        │         │          │          │             │
+      │N       │N        │N         │N         │N            │N
+  ┌───▼────┐ ┌─▼──────┐ ┌▼───────┐ ┌▼───────┐ ┌▼──────────┐ ┌▼──────────┐
+  │plate_  │ │access_ │ │parking_│ │mainte- │ │sensor_    │ │pdm_       │
+  │recogni-│ │event   │ │session │ │nance_  │ │reading    │ │prediction │
+  │tion    │ │        │ │        │ │record  │ │           │ │           │
+  │        │ │        │ │        │ │        │ │           │ │           │
+  │SET NULL│ │SET NULL│ │SET NULL│ │CASCADE │ │CASCADE    │ │CASCADE    │
+  └───▲────┘ └───┬────┘ └───┬────┘ └────────┘ └───────────┘ └───────────┘
+      │1         │          ╎
+      │          │          ╎ entry_event_id / exit_event_id
+      │N         │          ╎ (BIGINT, FK 제약 없음 — 추적용 값)
+      └──────────┘◁╌╌╌╌╌╌╌╌╌╯
+       recognition_id
+       (SET NULL)
+
+  ┌─────────────────────┐
+  │   model_benchmark   │  (독립: 측정 이력만 쌓인다)
+  │  PK id              │
+  │     model_name      │
+  │     quantized       │
+  └─────────────────────┘
+
+  범례:  ───  외래키 제약 있음        ╌╌╌  제약 없는 참조(값만 보관)
+         1:N  일대다                  UQ   유니크 제약
+         SET NULL / CASCADE : 참조 대상 삭제 시의 동작

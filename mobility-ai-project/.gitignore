@@ -1,0 +1,43 @@
+# ---- 공통 ----
+.env
+logs/
+*.log
+.DS_Store
+
+# ---- Python (ai-service) ----
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.egg-info/
+
+# 학습 가중치와 데이터셋은 용량이 커서 버전 관리에서 제외한다.
+ai-service/models/*.pt
+ai-service/models/*.onnx
+ai-service/models/*.pth
+datasets/
+runs/
+
+# ---- Java (backend) ----
+backend/build/
+backend/.gradle/
+backend/out/
+backend/bin/
+*.class
+
+# 업로드된 차량 이미지는 개인정보를 포함할 수 있어 커밋하지 않는다.
+backend/data/uploads/
+
+# ---- Node (frontend) ----
+node_modules/
+frontend/dist/
+frontend/.vite/
+npm-debug.log*
+
+# ---- IDE ----
+.idea/
+.vscode/
+*.iml

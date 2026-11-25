@@ -1,0 +1,26 @@
+# 번호판 검출 데이터셋 설정 (Ultralytics YOLO 형식)
+#
+# path 아래 train/val/test 는 '이미지' 디렉터리 경로다.
+# 라벨은 images 를 labels 로 바꾼 같은 구조의 경로에서 자동으로 찾는다.
+#   data/plate/images/train/20260311_gate1_0007.jpg
+#   data/plate/labels/train/20260311_gate1_0007.txt
+#
+# 윈도우 경로는 역슬래시 대신 슬래시를 쓰거나 따옴표로 감싼다.
+
+path: ../data/plate          # 데이터셋 루트(이 yaml 파일 기준 상대경로)
+train: images/train          # 학습용 이미지
+val: images/val              # 검증용 이미지(에폭마다 성능 측정)
+test: images/test            # 최종 평가용. 학습·검증에 절대 쓰지 않는다
+
+# 클래스 정의 — 본 프로젝트는 번호판 단일 클래스만 쓴다.
+# 클래스를 늘리면(예: 차량, 2줄번호판) 라벨 파일의 class_id 도 함께 바꿔야 한다.
+nc: 1
+names:
+  0: plate
+
+# 참고: 다중 클래스로 확장할 때의 예시(주석 처리)
+# nc: 3
+# names:
+#   0: plate          # 1줄 승용 번호판
+#   1: plate_double   # 2줄 번호판(구형 지역명 포함)
+#   2: plate_truck    # 화물차 후면 번호판

@@ -1,0 +1,23 @@
+{
+  "recognitionId": 101,
+  "plateNumber": "12가3456",
+  "confidence": 0.973,
+  "status": "SUCCESS",
+  "validFormat": true,
+  "matchedVehicle": {
+    "id": 1,
+    "plateNumber": "12가3456",
+    "ownerName": "홍길동",
+    "passType": "REGULAR"
+  },
+  "eventId": 501,
+  "eventType": "ENTRY",
+  "allowed": true,
+  "rejectReason": null,
+  "parkingSessionId": 301,
+  "feeAmount": null,
+  "parkedMinutes": null,
+  "detections": [{"bbox": [412, 288, 596, 342], "score": 0.981}],
+  "elapsedMs": {"detect": 38.2, "ocr": 19.7, "total": 61.4},
+  "quality": {"score": 0.86, "readable": true}
+}

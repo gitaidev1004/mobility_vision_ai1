@@ -1,0 +1,27 @@
+# =====================================================================
+# 운영 프로파일 : SQL 로그 off, 비밀값은 반드시 환경변수로 주입한다.
+# 컨테이너 실행 예: docker compose 의 backend 서비스 environment 참조
+# =====================================================================
+spring:
+  jpa:
+    show-sql: false
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://postgres:5432/mobility_ai}
+    hikari:
+      maximum-pool-size: ${DB_POOL_MAX:20}
+
+logging:
+  level:
+    root: WARN
+    com.mobility.ai: INFO
+
+management:
+  endpoint:
+    health:
+      show-details: never
+
+app:
+  ai:
+    base-url: ${AI_BASE_URL:http://ai-service:8000}
+  storage:
+    upload-dir: ${UPLOAD_DIR:/app/data/uploads}

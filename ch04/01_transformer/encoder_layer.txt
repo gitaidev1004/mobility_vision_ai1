@@ -1,0 +1,17 @@
+# Post-LN 방식 (Transformer 원본, DETR)
+x = LayerNorm(x + MultiHeadSelfAttention(x))
+x = LayerNorm(x + FFN(x))
+
+# Pre-LN 방식 (최근 구현에서 선호)
+x = x + MultiHeadSelfAttention(LayerNorm(x))
+x = x + FFN(LayerNorm(x))
+
+# FFN 의 내부
+FFN(x) = Linear_2(ReLU(Linear_1(x)))
+  Linear_1: (d_model -> d_ff),  보통 d_ff = 4 * d_model
+  Linear_2: (d_ff -> d_model)
+
+# 디코더 레이어는 어텐션이 두 개다
+y = LayerNorm(y + MultiHeadSelfAttention(y))          # 쿼리끼리
+y = LayerNorm(y + MultiHeadCrossAttention(y, memory)) # 쿼리 -> 인코더 출력
+y = LayerNorm(y + FFN(y))

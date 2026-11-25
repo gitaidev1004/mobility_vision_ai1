@@ -1,0 +1,21 @@
+# 번호판 검출 데이터셋 설정 (Ultralytics 8.3)
+# 부록 B (4) 세션 기준 분할 결과를 반영한다.
+
+# 데이터셋 루트. 절대 경로 또는 이 파일 기준 상대 경로.
+path: ../datasets/plate_det
+
+# 분할별 이미지 디렉터리. labels/ 는 같은 이름으로 자동 탐색된다.
+train: images/train
+val: images/val
+test: images/test
+
+# 클래스 정의. 번호판 한 종류만 검출한다.
+nc: 1
+names:
+  0: plate
+
+# --- 참고 기록 (학습에는 쓰이지 않지만 추적용으로 남긴다) ---
+# 분할 기준: 촬영 세션 단위 (부록 B (4)-①)
+# 누수 검사: appx/B_dataset/check_leakage.py 판정 PASS
+# 환경 구성: DY 3000 / NI 1500 / RA 800 / BL 600 / FA 700 / TI 500 / OC 400
+# 번호판 최소 폭: 96px (OCR 집합 기준)

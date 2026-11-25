@@ -1,0 +1,16 @@
+예측 집합 : y_hat = { (p_hat_i, b_hat_i) }, i = 1..N   (N = 100)
+정답 집합 : y     = { (c_j, b_j) }, j = 1..M            (M = 실제 객체 수)
+
+정답 집합을 N 개로 패딩한다 (M 개 객체 + (N-M) 개 배경)
+  y = { (c_1,b_1), ..., (c_M,b_M), (bg,-), ..., (bg,-) }
+
+1단계: 최적 순열 sigma_hat 을 찾는다
+  sigma_hat = argmin_sigma  sum_j  L_match( y_j , y_hat_sigma(j) )
+
+2단계: 그 순열로 손실을 계산한다
+  L_hungarian(y, y_hat)
+    = sum_j [ -log p_hat_sigma(j)(c_j)
+              + 1{c_j != bg} * L_box( b_j , b_hat_sigma(j) ) ]
+
+핵심: 1단계는 미분하지 않는다(순열 탐색).
+      2단계만 역전파 대상이다.

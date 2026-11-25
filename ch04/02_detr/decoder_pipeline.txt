@@ -1,0 +1,22 @@
+객체 쿼리 (학습 파라미터)   : (100, 256)
+인코더 출력 memory          : (1008, 256)
+
+디코더 레이어 i (i = 1..6):
+  # 1) 쿼리끼리 Self-Attention : 역할 분담
+  q = LayerNorm(q + SelfAttn(q + query_pos))
+       어텐션 행렬 100 x 100
+
+  # 2) Cross-Attention : 이미지에서 정보 수집
+  q = LayerNorm(q + CrossAttn(query = q + query_pos,
+                              key   = memory + pos_2d,
+                              value = memory))
+       어텐션 행렬 100 x 1008
+
+  # 3) FFN : 토큰별 가공
+  q = LayerNorm(q + FFN(q))
+
+  # 4) 보조 손실용 중간 예측 (Auxiliary Loss)
+  cls_i  = Linear_cls(q)      # (100, n_class+1)
+  box_i  = Sigmoid(MLP_box(q)) # (100, 4) cxcywh 정규화
+
+최종 출력 : cls_6, box_6 (학습 시에는 cls_1..6 모두 손실에 포함)

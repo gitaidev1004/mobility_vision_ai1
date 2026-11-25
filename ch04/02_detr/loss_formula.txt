@@ -1,0 +1,15 @@
+L_total = w_cls * L_cls + w_l1 * L_l1 + w_giou * L_giou
+
+분류 손실 (모든 쿼리에 대해)
+  L_cls = sum_{i in 전경} ( -log p_i(c_i) )
+        + eos_coef * sum_{i in 배경} ( -log p_i(bg) )
+  eos_coef = 0.1   # 배경 쿼리가 압도적으로 많으므로 가중치를 낮춘다
+
+박스 손실 (전경 쿼리에 대해서만, 전경 개수로 평균)
+  L_l1   = (1/N_box) * sum_{i in 전경} || b_i - b_i_hat ||_1
+  L_giou = (1/N_box) * sum_{i in 전경} ( 1 - GIoU(b_i, b_i_hat) )
+
+보조 손실까지 포함한 전체
+  L = sum_{layer = 1..6} L_total(layer)
+
+기본 가중치: w_cls = 1, w_l1 = 5, w_giou = 2

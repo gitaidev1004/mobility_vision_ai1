@@ -1,0 +1,12 @@
+MultiHead(Q, K, V) = Concat(head_1, ..., head_h) W_O
+
+  head_i = Attention(Q W_Qi, K W_Ki, V W_Vi)
+  d_head = d_model / h          # 각 헤드의 차원
+
+예: d_model = 256, h = 8 이면 d_head = 32
+  W_Qi, W_Ki, W_Vi : (256, 32)  헤드별 투영
+  W_O              : (256, 256) 출력 투영
+
+실제 구현에서는 헤드별 투영을 따로 두지 않고
+(256, 256) 하나로 한 번에 투영한 뒤 reshape 으로 쪼갠다.
+수학적으로 동일하지만 행렬 곱이 한 번으로 줄어 훨씬 빠르다.

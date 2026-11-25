@@ -1,0 +1,28 @@
+입력 이미지
+   |
+   v  ResNet-50 백본 (C3, C4, C5) + C6 추가
+다중 스케일 특징 4단 (stride 8/16/32/64)
+   |
+   v  1x1 Conv 로 d_model=256 통일, 평탄화, 위치·레벨 인코딩
+인코더 입력 토큰 (약 21,000개)
+   |
+   v  Deformable Encoder 6 레이어 (희소 샘플링)
+인코더 출력 memory
+   |
+   +--> 보조 검출 헤드로 제안 생성 -> 상위 K개 선택
+   |         (Mixed Query Selection: 위치만 가져온다)
+   v
+디코더 입력
+   = [ 객체 쿼리 K개 : 위치=인코더 제안, 내용=학습 파라미터 ]
+   + [ DN 쿼리 (학습 시에만) : positive + negative 그룹 ]
+   |
+   v  Deformable Decoder 6 레이어
+   |    각 레이어에서:
+   |      1) 쿼리 Self-Attention (DN 쿼리는 어텐션 마스크로 격리)
+   |      2) Deformable Cross-Attention (앵커 크기에 비례한 샘플링)
+   |      3) FFN
+   |      4) 앵커 박스 갱신 (Look Forward Twice)
+   v
+검출 헤드 (레이어마다, 보조 손실 포함)
+   -> 클래스 로짓 + 박스 좌표
+   -> 추론 시 DN 쿼리 출력은 버린다

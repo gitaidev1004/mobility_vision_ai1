@@ -1,0 +1,124 @@
+[project]
+name = "mobility-ai-service"
+version = "1.0.0"
+description = "모빌리티 비전 AI 서비스 - 번호판 인식(LPR) + 예지보전(PdM) REST API"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [{ name = "Mobility AI Project" }]
+keywords = ["lpr", "anpr", "predictive-maintenance", "fastapi", "computer-vision"]
+
+# 런타임 필수 의존성.
+# 주의: torch / ultralytics / scikit-learn 등 "무거운" 패키지는 의도적으로 optional 로 분리했다.
+# 이 서비스는 가중치/딥러닝 런타임이 없어도 OpenCV 기반 폴백으로 100% 동작해야 하기 때문이다.
+dependencies = [
+    "fastapi==0.118.0",
+    "uvicorn[standard]==0.37.0",
+    "pydantic==2.11.9",
+    "pydantic-settings==2.10.1",
+    "python-multipart==0.0.20",
+    "numpy==2.1.3",
+    "opencv-python-headless==4.12.0.88",
+    "pillow==11.3.0",
+    "python-dotenv==1.1.1",
+]
+
+[project.optional-dependencies]
+# 딥러닝 추론 경로를 쓰려면 설치한다. 없으면 자동으로 폴백이 선택된다.
+deep = [
+    "torch==2.8.0",
+    "torchvision==0.23.0",
+    "ultralytics==8.3.200",
+    "onnxruntime==1.22.1",
+]
+# 예지보전 머신러닝 모델(IsolationForest/RandomForest 등)
+ml = [
+    "scikit-learn==1.7.2",
+    "pandas==2.3.2",
+    "joblib==1.5.2",
+]
+# 선택적 OCR 엔진. PaddleOCR 은 플랫폼별 휠 사정이 달라 requirements.txt 에서 제외한다.
+paddle = [
+    "paddlepaddle==2.6.2",
+    "paddleocr==2.8.1",
+]
+dev = [
+    "pytest==8.4.2",
+    "httpx==0.28.1",
+    "ruff==0.14.0",
+]
+
+[project.urls]
+Homepage = "https://example.com/mobility-ai-project"
+
+[project.scripts]
+# 학습/내보내기/벤치마크 CLI. `python -m app.train.train_crnn` 로도 동일하게 실행된다.
+mobility-synth-plate = "app.train.synth_plate:main"
+mobility-train-crnn = "app.train.train_crnn:main"
+mobility-train-detector = "app.train.train_detector:main"
+mobility-export-onnx = "app.train.export_onnx:main"
+mobility-quantize = "app.train.quantize:main"
+mobility-benchmark = "app.train.benchmark:main"
+
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+# ---------------------------------------------------------------------------
+# ruff: 린터 + 포매터 설정
+# ---------------------------------------------------------------------------
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+src = ["app", "tests"]
+exclude = [".venv", "models", "build", "dist", "__pycache__"]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle error
+    "F",    # pyflakes
+    "I",    # isort (import 정렬)
+    "B",    # flake8-bugbear
+    "UP",   # pyupgrade
+    "C4",   # comprehension
+    "SIM",  # simplify
+    "RET",  # return 문 정리
+    "ANN",  # 타입힌트 강제 (교재 품질 요구사항)
+]
+ignore = [
+    "ANN401",  # **kwargs: Any 허용
+    "B008",    # FastAPI 의 Depends()/File() 기본값 패턴 때문에 필요
+    "E501",    # line-length 는 formatter 가 처리
+    "SIM105",  # try/except/pass 를 contextlib.suppress 로 강제하지 않음(교재 가독성)
+]
+
+[tool.ruff.lint.per-file-ignores]
+# 테스트에는 반환 타입힌트를 강제하지 않는다.
+"tests/*" = ["ANN001", "ANN201", "ANN202"]
+"app/train/*" = ["ANN001"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+# ---------------------------------------------------------------------------
+# pytest 설정
+# ---------------------------------------------------------------------------
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-ra --strict-markers"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
+markers = [
+    "slow: 수초 이상 걸리는 테스트",
+    "needs_torch: torch 설치가 필요한 테스트",
+]

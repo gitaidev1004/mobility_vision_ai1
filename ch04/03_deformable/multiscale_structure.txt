@@ -1,0 +1,22 @@
+백본 ResNet-50 의 각 단계
+  C3 : (512,  H/8,  W/8)
+  C4 : (1024, H/16, W/16)
+  C5 : (2048, H/32, W/32)
+  C6 : C5 에 stride 2 3x3 Conv 추가 -> (2048, H/64, W/64)
+
+각 단계를 1x1 Conv 로 d_model=256 으로 통일
+  L0 : (256, H/8,  W/8)
+  L1 : (256, H/16, W/16)
+  L2 : (256, H/32, W/32)
+  L3 : (256, H/64, W/64)
+
+평탄화 후 이어붙여 하나의 시퀀스로
+  memory = concat(flatten(L0), flatten(L1),
+                  flatten(L2), flatten(L3))
+  shape  = (N_total, 256)
+
+각 스케일에 레벨 임베딩(level embedding)을 더해
+어느 스케일에서 온 토큰인지 구분할 수 있게 한다
+
+샘플링 수 (쿼리 하나당)
+  heads(8) x levels(4) x points(4) = 128 개 위치

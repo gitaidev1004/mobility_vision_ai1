@@ -1,0 +1,55 @@
+// 모빌리티 비전 AI 백엔드 빌드 스크립트
+// Spring Boot 4.0.8 + Java 21 + Gradle 8.14.3
+// 주의: Spring Boot 4 에서는 io.spring.dependency-management 플러그인을 쓰지 않고
+//       BOM(platform)을 직접 import 하여 버전을 정렬한다.
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '4.0.8'
+}
+
+group = 'com.mobility'
+version = '1.0.0'
+
+// Zulu OpenJDK 21 등 어떤 벤더든 languageVersion 21 툴체인을 사용한다.
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Spring Boot 4.0.8 BOM: 모든 스타터의 버전을 이 플랫폼이 결정한다.
+    implementation platform("org.springframework.boot:spring-boot-dependencies:4.0.8")
+
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    // JWT(Nimbus) 인코더/디코더는 oauth2-resource-server 스타터가 제공한다.
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    implementation 'org.flywaydb:flyway-core'
+    runtimeOnly 'org.flywaydb:flyway-database-postgresql'
+    runtimeOnly 'org.postgresql:postgresql'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+}
+
+// 소스/리소스 인코딩 고정 (한글 주석 보존)
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.compilerArgs << '-parameters'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+    testLogging {
+        events 'passed', 'skipped', 'failed'
+    }
+}

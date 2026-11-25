@@ -1,0 +1,22 @@
+쿼리 q 의 구성
+  content_q : (256,)      특징 벡터 (무엇을 찾는가)
+  anchor_q  : (4,)        (cx, cy, w, h) 정규화 (어디를 보는가)
+
+레이어 i 에서의 처리
+  1) anchor 를 위치 인코딩으로 변환
+     pos_q = MLP( sin_cos_encode( anchor_q ) )
+
+  2) Deformable Cross-Attention
+     기준점 p_q = (cx, cy)
+     샘플링 범위를 (w, h) 에 비례하도록 조절한다
+       dp_mqk_scaled = dp_mqk * (w, h) / 2
+     -> 큰 박스는 넓게, 작은 박스는 좁게 샘플링한다
+
+  3) 박스 갱신 (delta 예측)
+     d = MLP_box( content_q )            # (4,) 로짓 공간 증분
+     anchor_{i+1} = sigmoid( inverse_sigmoid(anchor_q) + d )
+
+  4) 다음 레이어로 전달
+     content_{i+1}, anchor_{i+1}
+
+최종 예측 = anchor_6 (6번째 레이어의 박스)

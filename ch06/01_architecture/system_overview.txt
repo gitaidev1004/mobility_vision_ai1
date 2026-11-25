@@ -1,0 +1,48 @@
+┌──────────────────────────────────────────────────────────────────────────┐
+│                        운영자 브라우저 (Chrome 등)                        │
+└───────────────────────────────────┬──────────────────────────────────────┘
+                                    │  HTTP (화면 로드 + XHR)
+                                    ▼
+┌──────────────────────────────────────────────────────────────────────────┐
+│  Frontend  :5173   Vue 3.5 + Vite 6                                      │
+│  ─────────────────────────────────────────────────────────────────────── │
+│  /login  /  /recognition  /vehicles  /events  /parking                   │
+│  /maintenance  /pdm  /benchmark                                          │
+│  · axios 인스턴스 src/api/http.js (baseURL /api/v1, Bearer 주입)          │
+│  · Vite dev proxy :  /api  ──►  http://localhost:8080                    │
+└───────────────────────────────────┬──────────────────────────────────────┘
+                                    │  REST + JSON  (Authorization: Bearer)
+                                    ▼
+┌──────────────────────────────────────────────────────────────────────────┐
+│  Backend  :8080   Spring Boot 4.0.8 / Java 21 / Gradle 8.14.3            │
+│  ─────────────────────────────────────────────────────────────────────── │
+│   web/        REST 컨트롤러 10종   (prefix /api/v1)                       │
+│   service/    RecognitionService · AccessEventService · ParkingService    │
+│               PdmService · DashboardService · BenchmarkService …          │
+│   client/     AiInferenceClient  (RestClient, 타임아웃 + 폴백)             │
+│   repository/ Spring Data JPA 9종                                         │
+│   config/     SecurityConfig(JWT) · JwtConfig · CorsConfig · Flyway        │
+└───────┬──────────────────────────────────────────────────┬───────────────┘
+        │  multipart / JSON                                │  JDBC
+        ▼                                                  ▼
+┌───────────────────────────────────────┐   ┌──────────────────────────────┐
+│  AI service  :8000  FastAPI / Py 3.12 │   │  PostgreSQL 16   :5432       │
+│  ──────────────────────────────────── │   │  ─────────────────────────── │
+│  POST /api/v1/lpr/recognize           │   │  DB   mobility_ai            │
+│  POST /api/v1/lpr/recognize-frames    │   │  USER mobility               │
+│  POST /api/v1/pdm/predict             │   │  테이블 10종                  │
+│  GET  /api/v1/models/info             │   │   app_user  vehicle          │
+│  POST /api/v1/models/benchmark        │   │   plate_recognition          │
+│  GET  /health                         │   │   access_event               │
+│  ──────────────────────────────────── │   │   parking_policy             │
+│  detection/  yolo · mobilenet         │   │   parking_session            │
+│  ocr/        crnn · attention · paddle│   │   maintenance_record         │
+│  pipeline/   lpr_pipeline · rectify   │   │   sensor_reading             │
+│              quality                  │   │   pdm_prediction             │
+│  pdm/        features                 │   │   model_benchmark            │
+│  core/       registry · fallback      │   │  스키마는 Flyway 가 관리       │
+└───────────────────────────────────────┘   └──────────────────────────────┘
+        ▲
+        │ 가중치 파일이 없으면 core/fallback.py 의 고전 영상처리로 대체
+        │ (응답의 detector/recognizer 에 -fallback 접미사가 붙는다)
+        └───────────────────────────────────────────────────────────────────

@@ -1,0 +1,22 @@
+[조밀 어텐션] 모든 위치를 본다
+  Attn(z_q, x) = sum_{k=1}^{N} A_qk * W * x_k
+     A_qk = softmax_k( (W_Q z_q)^T (W_K x_k) / sqrt(d) )
+     N = 특징맵 전체 토큰 수 (수천~수만)
+     비용 : O(N^2 * d)
+
+[Deformable Attention] 기준점 주변 K 개만 본다
+  DeformAttn(z_q, p_q, x)
+    = sum_{m=1}^{M} W_m [ sum_{k=1}^{K} A_mqk * W'_m * x( p_q + dp_mqk ) ]
+
+     M      : 헤드 수 (보통 8)
+     K      : 헤드당 샘플링 점 수 (보통 4)
+     p_q    : 쿼리 q 의 2차원 기준점 (정규화 좌표)
+     dp_mqk : 학습된 샘플링 오프셋 (z_q 로부터 선형 예측)
+     A_mqk  : 학습된 어텐션 가중치 (z_q 로부터 선형 예측, sum_k = 1)
+     비용   : O(N * M * K * d)   <- N 에 선형
+
+핵심 차이
+  1) A 를 Q·K 내적으로 계산하지 않고 쿼리에서 직접 예측한다
+     -> K 와의 내적이 사라져 N^2 항이 소멸한다
+  2) 보는 위치가 격자점이 아니라 실수 좌표다
+     -> bilinear 보간으로 값을 읽는다

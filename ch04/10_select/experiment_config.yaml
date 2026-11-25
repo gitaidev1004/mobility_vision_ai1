@@ -1,0 +1,88 @@
+# 모델 선정 실험 고정 조건
+# 이 파일의 값은 실험이 끝날 때까지 바꾸지 않는다.
+# 한 항목이라도 바뀌면 그 전에 측정한 결과는 비교 대상에서 제외한다.
+
+experiment: "ch04-detector-selection"
+version: "1.0.0"
+recorded_at: "2026-10-24"
+
+# 1) 실행 환경 — 측정값의 전제 조건이다. 반드시 기록해 둔다.
+runtime:
+  seed: 20261024          # 파이썬/numpy/torch 난수 시드
+  threads: 1              # BLAS/OpenMP 스레드 수. 4로 바꾼 측정과 섞지 않는다.
+  device: "cpu"
+  input_size: 640         # 모든 모델 동일. 모델별 권장값을 쓰면 비교가 깨진다.
+  warmup: 5               # 측정에서 제외할 호출 횟수
+  runs: 30                # 지연 측정 반복 횟수(p95 를 내려면 최소 20회)
+
+# 2) 전처리 — 모든 후보에 같은 함수를 적용한다.
+preprocess:
+  letterbox: true         # 가로세로 비율 유지. 번호판 왜곡을 막는다.
+  pad_value: 114
+  normalize: "div255"     # div255 | imagenet. 모델별로 바꾸지 않는다.
+  color_order: "RGB"
+  interpolation: "nearest"
+
+# 3) 임계값 — 모델마다 유리한 값을 쓰면 비교가 무의미해진다.
+threshold:
+  conf_threshold: 0.25    # 검출 신뢰도 하한
+  iou_threshold: 0.50     # NMS IoU
+  match_iou: 0.50         # 정답 매칭 IoU
+  max_det: 20
+
+# 4) 데이터셋 — 분할은 고정하고, 분할 파일의 해시를 기록한다.
+dataset:
+  root: "data/plates"
+  split_file: "data/plates/split_v1.json"
+  split_sha256: "기록 필요"      # 실제 실행 시 파일 해시를 적어 둔다
+  train_ratio: 0.70
+  val_ratio: 0.15
+  test_ratio: 0.15
+  split_by: "vehicle_and_session"  # 같은 차량/촬영 세션이 분할을 넘지 않게 한다
+  test_images: 1200
+  conditions:                      # 환경별로 나눠 측정한다
+    - "day_clear"
+    - "night"
+    - "rain"
+    - "backlight"
+    - "far_distance"
+    - "tilted"
+
+# 5) 비교 대상 — key 는 모델 레지스트리와 일치시킨다.
+models:
+  - yolo_n
+  - yolo_s
+  - mbnet_det
+  - detr_r50
+  - ddetr_r50
+  - dino_r50
+  - yolos_s
+  - swin_dino
+  - vitdet_b
+
+# 6) 종합 점수 가중치 — 합계는 1.0 이어야 한다.
+#    프로젝트 목표(CPU 전용, 번호 문자열 정확도 우선)에서 역산한 값이다.
+scoring:
+  weights:
+    exact_match_rate: 0.40   # 번호 문자열 완전 일치율
+    detect_recall: 0.20      # 번호판 검출 재현율
+    latency: 0.25            # CPU p95 지연
+    memory: 0.15             # 최대 상주 메모리
+  direction:
+    exact_match_rate: "higher_better"
+    detect_recall: "higher_better"
+    latency: "lower_better"
+    memory: "lower_better"
+  # 운영 요건을 못 지키면 점수와 무관하게 탈락시킨다.
+  hard_constraints:
+    max_p95_ms: 300
+    max_memory_mb: 600
+    min_detect_recall: 0.95
+
+# 7) 양자화 비교 — 변환 전후를 같은 테스트셋으로 다시 측정한다.
+quantization:
+  enabled: true
+  backend: "onnxruntime"
+  mode: "int8_dynamic"
+  calibration_images: 200
+  report_delta: true        # 정확도 하락폭과 지연 개선폭을 함께 기록

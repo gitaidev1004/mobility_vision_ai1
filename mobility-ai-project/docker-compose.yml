@@ -1,0 +1,91 @@
+# 모빌리티 비전 AI 프로젝트 — 개발용 인프라
+#
+#   docker compose up -d            # PostgreSQL 기동
+#   docker compose --profile app up # 애플리케이션까지 컨테이너로 기동
+#
+# 애플리케이션(ai-service / backend / frontend)은 개발 중에는 로컬에서 직접
+# 실행하는 편이 빠르다. PostgreSQL 만 컨테이너로 띄우는 것을 기본으로 한다.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: mobility-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-mobility_ai}
+      POSTGRES_USER: ${POSTGRES_USER:-mobility}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mobility123}
+      # 한글 정렬·검색을 위해 UTF-8 로케일을 명시한다.
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+      TZ: Asia/Seoul
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      # 컨테이너 최초 기동 시에만 실행되는 초기화 스크립트.
+      # 백엔드가 Flyway 로 스키마를 관리하므로 여기서는 확장 설치만 수행한다.
+      - ./db/00_init_extension.sql:/docker-entrypoint-initdb.d/00_init_extension.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-mobility} -d ${POSTGRES_DB:-mobility_ai}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # ---------------------------------------------------------------- 선택 프로필
+  ai-service:
+    profiles: ["app"]
+    build:
+      context: ./ai-service
+      dockerfile: Dockerfile
+    container_name: mobility-ai-service
+    restart: unless-stopped
+    environment:
+      AI_HOST: 0.0.0.0
+      AI_PORT: "8000"
+      AI_TORCH_THREADS: "4"
+      TZ: Asia/Seoul
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./ai-service/models:/app/models
+
+  backend:
+    profiles: ["app"]
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: mobility-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_NAME: ${POSTGRES_DB:-mobility_ai}
+      DB_USER: ${POSTGRES_USER:-mobility}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-mobility123}
+      AI_SERVICE_BASE_URL: http://ai-service:8000
+      JWT_SECRET: ${JWT_SECRET:-change-this-secret-key-at-least-32-bytes-long}
+      TZ: Asia/Seoul
+    ports:
+      - "8080:8080"
+    volumes:
+      - upload-data:/app/data/uploads
+
+  frontend:
+    profiles: ["app"]
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: mobility-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+
+volumes:
+  postgres-data:
+  upload-data:

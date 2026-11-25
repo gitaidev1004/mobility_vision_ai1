@@ -1,0 +1,25 @@
+{
+  "plate_number": "12가3456",
+  "confidence": 0.973,
+  "status": "SUCCESS",
+  "valid_format": true,
+  "detector": "yolo",
+  "recognizer": "crnn",
+  "elapsed_ms": {"detect": 38.2, "ocr": 19.7, "total": 61.4},
+  "quality": {
+    "score": 0.86,
+    "blur": 142.3,
+    "brightness": 118.4,
+    "plate_px_width": 184,
+    "readable": true,
+    "reason": null
+  },
+  "detections": [
+    {"bbox": [412, 288, 596, 342], "score": 0.981, "label": "plate"}
+  ],
+  "candidates": [
+    {"text": "12가3456", "confidence": 0.973},
+    {"text": "12가3456", "confidence": 0.41}
+  ],
+  "char_confidences": [0.99, 0.98, 0.95, 0.99, 0.97, 0.98, 0.96]
+}
